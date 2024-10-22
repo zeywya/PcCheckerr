@@ -167,7 +167,7 @@ function List-BAMStateUserSettings {
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
     if (Test-Path $outputFile) { Clear-Content $outputFile }
     $loggedPaths = @{}
-     Write-Host " Fetching UserSettings Entries " -ForegroundColor Blue
+     Write-Host " Fetching UserSettings Entries " -ForegroundColor Red
     # Log entries from bam\State\UserSettings
     $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings"
     $userSettings = Get-ChildItem -Path $registryPath | Where-Object { $_.Name -like "*1001" }
@@ -196,7 +196,7 @@ Write-Host "Fetching Compatibility Assistant Entries"
             $loggedPaths[$_.Name] = $true
         }
     }
-Write-Host "Fetching AppsSwitched Entries" -ForegroundColor Blue
+Write-Host "Fetching AppsSwitched Entries" -ForegroundColor Red
     # Log entries from FeatureUsage\AppSwitched
     $newRegistryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched"
     if (Test-Path $newRegistryPath) {
@@ -208,7 +208,7 @@ Write-Host "Fetching AppsSwitched Entries" -ForegroundColor Blue
             }
         }
     }
-Write-Host "Fetching MuiCache Entries" -ForegroundColor Blue
+Write-Host "Fetching MuiCache Entries" -ForegroundColor Red
     # Log entries from MuiCache
     $muiCachePath = "HKCR:\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"
     if (Test-Path $muiCachePath) {
@@ -233,12 +233,12 @@ Write-Host "Fetching MuiCache Entries" -ForegroundColor Blue
     foreach ($name in $folderNames) {
         Add-Content -Path $outputFile -Value $name
         $url = "https://stats.cc/siege/$name"
-        Write-Host "Opening stats for $name on Stats.cc ..." -ForegroundColor Blue
+        Write-Host "Opening stats for $name on Stats.cc ..." -ForegroundColor Red
         Start-Process $url
         Start-Sleep -Seconds 0.5
     }
 }
-Write-Host " Fetching Downloaded Browsers " -ForegroundColor Blue
+Write-Host " Fetching Downloaded Browsers " -ForegroundColor Red
 function Log-BrowserFolders {
     Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkYellow
     $registryPath = "HKLM:\SOFTWARE\Clients\StartMenuInternet"
