@@ -5,7 +5,7 @@ $titleText = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64
 
 $darkRed = [System.ConsoleColor]::DarkRed
 $magenta = [System.ConsoleColor]::Magenta
-$white = [System.ConsoleColor]::White
+$Red = [System.ConsoleColor]::Red
 
 $art = @"
                   
