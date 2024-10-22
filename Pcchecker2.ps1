@@ -162,7 +162,7 @@ function Find-SusFiles {
 }
 
 function List-BAMStateUserSettings {
-    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkYellow
+    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor Red
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
     if (Test-Path $outputFile) { Clear-Content $outputFile }
@@ -240,7 +240,7 @@ Write-Host "Fetching MuiCache Entries" -ForegroundColor Red
 }
 Write-Host " Fetching Downloaded Browsers " -ForegroundColor Red
 function Log-BrowserFolders {
-    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkYellow
+    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor Red
     $registryPath = "HKLM:\SOFTWARE\Clients\StartMenuInternet"
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
@@ -255,7 +255,7 @@ function Log-BrowserFolders {
 }
 
 function Log-WindowsInstallDate {
-    Write-Host "Logging Windows install date..." -ForegroundColor DarkYellow
+    Write-Host "Logging Windows install date..." -ForegroundColor Red
     $os = Get-WmiObject -Class Win32_OperatingSystem
     $installDate = $os.ConvertToDateTime($os.InstallDate)
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
