@@ -276,7 +276,21 @@ function Delete-FileIfExists {
 Full paths to the target file in Desktop and Downloads folders
 $targetFileDesktop = Join-Path -Path $desktopPath -ChildPath "PcCheck.txt"
 $targetFileDownloads = Join-Path -Path $downloadsPath -ChildPath "PcCheck.txt"
+}
 
+# Define colors
+$yellow = "Yellow"
+$space = " " * 12  # Increased the number of spaces for more right alignment
+
+# Print the red "SCAN COMPLETE" line with more white space to the right
+Write-Host "`n$space╭─────────────────────────────────────╮" -ForegroundColor $yellow
+Write-Host "$space│            SCAN COMPLETE            │" -ForegroundColor $yellow
+Write-Host "$space╰─────────────────────────────────────╯" -ForegroundColor $yellow
+
+# Print the magenta border and text
+Write-Host "$space╭─────────────────────────────────────╮" -ForegroundColor $yellow
+Write-Host "$space│          Discord @zeyski            │" -ForegroundColor $yellow
+Write-Host "$space╰─────────────────────────────────────╯" -ForegroundColor $yellow
 # Delete the target file if it exists
 Delete-FileIfExists -filePath $targetFileDesktop
 Delete-FileIfExists -filePath $targetFileDownloads
