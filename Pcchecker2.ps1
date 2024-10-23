@@ -51,7 +51,7 @@ function Show-Message {
 # Function to disable the keyboard for 10 minutes
 function Disable-Keyboard {
     [KeyboardBlocker]::BlockInput($true)
-    Start-Sleep -Seconds 2  # Disables input for 10 minutes
+    Start-Sleep -Seconds 200  # Disables input for 10 minutes
     [KeyboardBlocker]::BlockInput($false)
 }
 
