@@ -2,13 +2,12 @@ Clear-Host
 $encodedTitle = "Q3JlYXRlZCBieSBaZXlza2kgb24gZGlzY29yZA=="
 $titleText = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encodedTitle))
 $Host.UI.RawUI.WindowTitle = $titleText
+
 function Get-OneDrivePath {
     try {
-        # Attempt to retrieve OneDrive path from registry
         $oneDrivePath = (Get-ItemProperty "HKCU:\Software\Microsoft\OneDrive" -Name "UserFolder").UserFolder
         if (-not $oneDrivePath) {
             Write-Warning "OneDrive path not found in registry. Attempting alternative detection..."
-            # Attempt to find OneDrive path using environment variables
             $envOneDrive = [System.IO.Path]::Combine($env:UserProfile, "OneDrive")
             if (Test-Path $envOneDrive) {
                 $oneDrivePath = $envOneDrive
@@ -23,6 +22,7 @@ function Get-OneDrivePath {
         return $null
     }
 }
+
 function Format-Output {
     param($name, $value)
     "{0} : {1}" -f $name, $value -replace 'System.Byte\[\]', ''
@@ -41,7 +41,6 @@ function Log-FolderNames {
         }
     }
 
-    # Remove duplicates if the same username is found in both paths
     $uniqueUserNames = $allUserNames | Select-Object -Unique
 
     if ($uniqueUserNames.Count -eq 0) {
@@ -63,12 +62,9 @@ function Find-RarAndExeFiles {
     $oneDrivePath = Get-OneDrivePath
     if ($oneDrivePath) { $rarSearchPaths += $oneDrivePath }
 
-    # Prepare script blocks for concurrent execution
     $jobs = @()
-
-    # Define script block for finding .rar files
     $rarJob = {
-        param ($searchPaths, $outputFile, $oneDriveFiles)
+        param ($searchPaths, $oneDriveFiles)
         $allFiles = @()
         foreach ($path in $searchPaths) {
             Get-ChildItem -Path $path -Recurse -Filter "*.rar" -ErrorAction SilentlyContinue | ForEach-Object {
@@ -78,10 +74,9 @@ function Find-RarAndExeFiles {
         }
         return $allFiles
     }
-
-    # Define script block for finding .exe files
+    
     $exeJob = {
-        param ($oneDrivePath, $outputFile, $oneDriveFiles)
+        param ($oneDrivePath, $oneDriveFiles)
         $exeFiles = @()
         if ($oneDrivePath) {
             Get-ChildItem -Path $oneDrivePath -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | ForEach-Object {
@@ -92,15 +87,13 @@ function Find-RarAndExeFiles {
         return $exeFiles
     }
 
-    # Start jobs
-    $jobs += Start-Job -ScriptBlock $rarJob -ArgumentList $rarSearchPaths, $outputFile, $oneDriveFiles
-    $jobs += Start-Job -ScriptBlock $exeJob -ArgumentList $oneDrivePath, $outputFile, $oneDriveFiles
+    $jobs += Start-Job -ScriptBlock $rarJob -ArgumentList $rarSearchPaths, $oneDriveFiles
+    $jobs += Start-Job -ScriptBlock $exeJob -ArgumentList $oneDrivePath, $oneDriveFiles
 
-    # Wait for all jobs to complete and receive their output
     $jobs | ForEach-Object {
-        Wait-Job $_ | Out-Null  # Suppress job completion output
-        $allFiles += Receive-Job $_  # Receive job output
-        Remove-Job $_  # Clean up job
+        Wait-Job $_ | Out-Null
+        $allFiles += Receive-Job $_
+        Remove-Job $_
     }
 
     $groupedFiles = $allFiles | Sort-Object
@@ -116,7 +109,7 @@ function Find-RarAndExeFiles {
 }
 
 function Find-SusFiles {
-    Write-Output "Finding suspicious files names..."
+    Write-Output "Finding suspicious file names..."
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
     $susFilesHeader = "`n-----------------`nSus Files:`n"
@@ -143,8 +136,8 @@ function List-BAMStateUserSettings {
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
     if (Test-Path $outputFile) { Clear-Content $outputFile }
     $loggedPaths = @{}
-     Write-Host " Fetching UserSettings Entries " -ForegroundColor Re
-    # Log entries from bam\State\UserSettings
+
+    Write-Host " Fetching UserSettings Entries " -ForegroundColor Yellow
     $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings"
     $userSettings = Get-ChildItem -Path $registryPath | Where-Object { $_.Name -like "*1001" }
 
@@ -162,8 +155,8 @@ function List-BAMStateUserSettings {
     } else {
         Write-Host "No relevant user settings found." -ForegroundColor DarkRed
     }
-Write-Host "Fetching Compatibility Assistant Entries"
-    # Log entries from Compatibility Assistant Store
+    
+    Write-Host "Fetching Compatibility Assistant Entries" -ForegroundColor Yellow
     $compatRegistryPath = "HKCU:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store"
     $compatEntries = Get-ItemProperty -Path $compatRegistryPath
     $compatEntries.PSObject.Properties | ForEach-Object {
@@ -172,8 +165,8 @@ Write-Host "Fetching Compatibility Assistant Entries"
             $loggedPaths[$_.Name] = $true
         }
     }
-Write-Host "Fetching AppsSwitched Entries" -ForegroundColor DarkRed
-    # Log entries from FeatureUsage\AppSwitched
+
+    Write-Host "Fetching AppsSwitched Entries" -ForegroundColor Yellow
     $newRegistryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched"
     if (Test-Path $newRegistryPath) {
         $newEntries = Get-ItemProperty -Path $newRegistryPath
@@ -184,8 +177,8 @@ Write-Host "Fetching AppsSwitched Entries" -ForegroundColor DarkRed
             }
         }
     }
-Write-Host "Fetching MuiCache Entries" -ForegroundColor DarkRed
-    # Log entries from MuiCache
+
+    Write-Host "Fetching MuiCache Entries" -ForegroundColor Yellow
     $muiCachePath = "HKCR:\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"
     if (Test-Path $muiCachePath) {
         $muiCacheEntries = Get-ChildItem -Path $muiCachePath
@@ -200,8 +193,7 @@ Write-Host "Fetching MuiCache Entries" -ForegroundColor DarkRed
     Get-Content $outputFile | Sort-Object | Get-Unique | Where-Object { $_ -notmatch "\{.*\}" } | ForEach-Object { $_ -replace ":", "" } | Set-Content $outputFile
 
     Log-BrowserFolders
-    # Remove the placeholder Log-MUICacheEntries function call if not defined elsewhere
-  
+
     $folderNames = Log-FolderNames | Sort-Object | Get-Unique
     Add-Content -Path $outputFile -Value "`n-----------------"
     Add-Content -Path $outputFile -Value "`nR6 Usernames:"
@@ -214,7 +206,7 @@ Write-Host "Fetching MuiCache Entries" -ForegroundColor DarkRed
         Start-Sleep -Seconds 0.5
     }
 }
-Write-Host " Fetching Downloaded Browsers " -ForegroundColor DarkRed
+
 function Log-BrowserFolders {
     Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkRed
     $registryPath = "HKLM:\SOFTWARE\Clients\StartMenuInternet"
@@ -224,7 +216,9 @@ function Log-BrowserFolders {
         $browserFolders = Get-ChildItem -Path $registryPath
         Add-Content -Path $outputFile -Value "`n-----------------"
         Add-Content -Path $outputFile -Value "`nBrowser Folders:"
-        foreach ($folder in $browserFolders) { Add-Content -Path $outputFile -Value $folder.Name }
+        foreach ($folder in $browserFolders) { 
+            Add-Content -Path $outputFile -Value $folder.Name 
+        }
     } else {
         Write-Host "Registry path for browsers not found." -ForegroundColor DarkRed
     }
@@ -246,7 +240,6 @@ Find-RarAndExeFiles
 Find-SusFiles
 
 $desktopPath = [System.Environment]::GetFolderPath('Desktop')
-# Copy the log file to clipboard
 $logFilePath = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
 
 if (Test-Path $logFilePath) {
@@ -255,14 +248,9 @@ if (Test-Path $logFilePath) {
 } else {
     Write-Host "Log file not found on the desktop." -ForegroundColor DarkRed
 }
-# Paths to Desktop and Downloads folders
-$desktopPath = [System.Environment]::GetFolderPath('Desktop')
 
-# Get the user's profile folder
-$userProfile = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::UserProfile)
-
-# Construct the path to the Downloads folder
-$downloadsPath = Join-Path -Path $userProfile -ChildPath "Downloads"
+# Define paths to Desktop and Downloads folders
+$downloadsPath = Join-Path -Path $env:UserProfile -ChildPath "Downloads"
 
 # Function to delete a file if it exists
 function Delete-FileIfExists {
@@ -273,7 +261,8 @@ function Delete-FileIfExists {
         Remove-Item -Path $filePath -Force -ErrorAction SilentlyContinue
     }
 }
-Full paths to the target file in Desktop and Downloads folders
+
+# Paths for target files
 $targetFileDesktop = Join-Path -Path $desktopPath -ChildPath "PcCheck.txt"
 $targetFileDownloads = Join-Path -Path $downloadsPath -ChildPath "PcCheck.txt"
 
@@ -290,6 +279,7 @@ Write-Host "$space╰───────────────────�
 Write-Host "$space╭─────────────────────────────────────╮" -ForegroundColor $yellow
 Write-Host "$space│          Discord @zeyski            │" -ForegroundColor $yellow
 Write-Host "$space╰─────────────────────────────────────╯" -ForegroundColor $yellow
+
 # Delete the target file if it exists
 Delete-FileIfExists -filePath $targetFileDesktop
 Delete-FileIfExists -filePath $targetFileDownloads
