@@ -276,7 +276,6 @@ function Delete-FileIfExists {
 Full paths to the target file in Desktop and Downloads folders
 $targetFileDesktop = Join-Path -Path $desktopPath -ChildPath "PcCheck.txt"
 $targetFileDownloads = Join-Path -Path $downloadsPath -ChildPath "PcCheck.txt"
-}
 
 # Define colors
 $yellow = "Yellow"
