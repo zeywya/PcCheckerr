@@ -138,7 +138,7 @@ function Find-SusFiles {
 }
 
 function List-BAMStateUserSettings {
-    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkRed
+    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor Red
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
     if (Test-Path $outputFile) { Clear-Content $outputFile }
@@ -253,7 +253,7 @@ if (Test-Path $logFilePath) {
     Set-Clipboard -Path $logFilePath
     Write-Host "Log file copied to clipboard." -ForegroundColor DarkRed
 } else {
-    Write-Host "Log file not found on the desktop." -ForegroundColor Red
+    Write-Host "Log file not found on the desktop." -ForegroundColor DarkRed
 }
 # Paths to Desktop and Downloads folders
 $desktopPath = [System.Environment]::GetFolderPath('Desktop')
