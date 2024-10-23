@@ -1,30 +1,7 @@
-# Clear the PowerShell window and set the custom window title
 Clear-Host
-$host.UI.RawUI.WindowTitle = "CREATED BY ZEYSKI ON DISCORD="
+$encodedTitle = "Q3JlYXRlZCBieSBaZXlza2kgb24gZGlzY29yZA=="
 $titleText = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encodedTitle))
-
-$darkRed = [System.ConsoleColor]::DarkRed
-$magenta = [System.ConsoleColor]::Magenta
-$Red = [System.ConsoleColor]::Red
-
-$art = @"
-                  
-
-|       /  |   ____\   \  /   /
-`---/  /   |  |__   \   \/   / 
-   /  /    |   __|   \_    _/  
-  /  /----.|  |____    |  |    
- /________||_______|   |__|                         
-"@
-
-foreach ($char in $art.ToCharArray()) {
-    if ($char -match '[▒░▓]') {
-        Write-Host $char -ForegroundColor $darkRed -NoNewline
-    } else {
-        Write-Host $char -ForegroundColor $magenta -NoNewline  # Use magenta for ASCII art
-    }
-}
-
+$Host.UI.RawUI.WindowTitle = $titleText
 function Get-OneDrivePath {
     try {
         # Attempt to retrieve OneDrive path from registry
@@ -46,7 +23,6 @@ function Get-OneDrivePath {
         return $null
     }
 }
-
 function Format-Output {
     param($name, $value)
     "{0} : {1}" -f $name, $value -replace 'System.Byte\[\]', ''
@@ -162,12 +138,12 @@ function Find-SusFiles {
 }
 
 function List-BAMStateUserSettings {
-    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor Red
+    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkRed
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
     if (Test-Path $outputFile) { Clear-Content $outputFile }
     $loggedPaths = @{}
-     Write-Host " Fetching UserSettings Entries " -ForegroundColor Red
+     Write-Host " Fetching UserSettings Entries " -ForegroundColor Re
     # Log entries from bam\State\UserSettings
     $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Services\bam\State\UserSettings"
     $userSettings = Get-ChildItem -Path $registryPath | Where-Object { $_.Name -like "*1001" }
@@ -184,7 +160,7 @@ function List-BAMStateUserSettings {
             }
         }
     } else {
-        Write-Host "No relevant user settings found." -ForegroundColor Red
+        Write-Host "No relevant user settings found." -ForegroundColor DarkRed
     }
 Write-Host "Fetching Compatibility Assistant Entries"
     # Log entries from Compatibility Assistant Store
@@ -196,7 +172,7 @@ Write-Host "Fetching Compatibility Assistant Entries"
             $loggedPaths[$_.Name] = $true
         }
     }
-Write-Host "Fetching AppsSwitched Entries" -ForegroundColor Red
+Write-Host "Fetching AppsSwitched Entries" -ForegroundColor DarkRed
     # Log entries from FeatureUsage\AppSwitched
     $newRegistryPath = "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FeatureUsage\AppSwitched"
     if (Test-Path $newRegistryPath) {
@@ -208,7 +184,7 @@ Write-Host "Fetching AppsSwitched Entries" -ForegroundColor Red
             }
         }
     }
-Write-Host "Fetching MuiCache Entries" -ForegroundColor Red
+Write-Host "Fetching MuiCache Entries" -ForegroundColor DarkRed
     # Log entries from MuiCache
     $muiCachePath = "HKCR:\Local Settings\Software\Microsoft\Windows\Shell\MuiCache"
     if (Test-Path $muiCachePath) {
@@ -233,14 +209,14 @@ Write-Host "Fetching MuiCache Entries" -ForegroundColor Red
     foreach ($name in $folderNames) {
         Add-Content -Path $outputFile -Value $name
         $url = "https://stats.cc/siege/$name"
-        Write-Host "Opening stats for $name on Stats.cc ..." -ForegroundColor Red
+        Write-Host "Opening stats for $name on Stats.cc ..." -ForegroundColor DarkRed
         Start-Process $url
         Start-Sleep -Seconds 0.5
     }
 }
-Write-Host " Fetching Downloaded Browsers " -ForegroundColor Red
+Write-Host " Fetching Downloaded Browsers " -ForegroundColor DarkRed
 function Log-BrowserFolders {
-    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor Red
+    Write-Host "Logging reg entries inside PowerShell..." -ForegroundColor DarkRed
     $registryPath = "HKLM:\SOFTWARE\Clients\StartMenuInternet"
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
     $outputFile = Join-Path -Path $desktopPath -ChildPath "PcCheckLogs.txt"
@@ -250,12 +226,12 @@ function Log-BrowserFolders {
         Add-Content -Path $outputFile -Value "`nBrowser Folders:"
         foreach ($folder in $browserFolders) { Add-Content -Path $outputFile -Value $folder.Name }
     } else {
-        Write-Host "Registry path for browsers not found." -ForegroundColor Red
+        Write-Host "Registry path for browsers not found." -ForegroundColor DarkRed
     }
 }
 
 function Log-WindowsInstallDate {
-    Write-Host "Logging Windows install date..." -ForegroundColor Red
+    Write-Host "Logging Windows install date..." -ForegroundColor DarkRed
     $os = Get-WmiObject -Class Win32_OperatingSystem
     $installDate = $os.ConvertToDateTime($os.InstallDate)
     $desktopPath = [System.Environment]::GetFolderPath('Desktop')
@@ -297,8 +273,7 @@ function Delete-FileIfExists {
         Remove-Item -Path $filePath -Force -ErrorAction SilentlyContinue
     }
 }
-
-# Full paths to the target file in Desktop and Downloads folders
+Full paths to the target file in Desktop and Downloads folders
 $targetFileDesktop = Join-Path -Path $desktopPath -ChildPath "PcCheck.txt"
 $targetFileDownloads = Join-Path -Path $downloadsPath -ChildPath "PcCheck.txt"
 
